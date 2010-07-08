@@ -10,6 +10,8 @@ Stable tag: 1.0
 Loads content pages or posts from a zipped collection of text files. Includes sample databases of 325 business letters.
 
 == Description ==
+Adds new content as Posts or Pages from an archive of text files. Interesting archives can be found on the support website.
+
 I've been using this plugin to add pages to my websites as I convert to WordPress. I find it easy to create text files where the first line of the text file is title of the page and the rest is the content. My procedure was to strip the html from my old static pages leaving just the content. I then zip the file and upload it to the Instant Content directory where the plugin loads the data.
 
 The plugin adds a link to the Pages and Posts menu in order to "Add instant Content".
