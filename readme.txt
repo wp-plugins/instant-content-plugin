@@ -16,7 +16,7 @@ The plugin adds a link to the Pages and Posts menu in order to "Add instant Cont
 
 The zip files in the plugin directory appear in a drop down box. Select the one to load.
 
-Posts: 
+Pages: 
 
 Opptionally you can select a parent page for the new content from a dropdown box of all of your existing pages. If you don't have any pages, the dropdown will not display.
 
