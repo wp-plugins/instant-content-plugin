@@ -1,13 +1,12 @@
 === Instant Content Plugin ===
-Tags: Content
-Stable tag: trunk
-Donate link: https://online.nwf.org/site/Donation2?df_id=6620&6620.donation=form1
-Requires at least: 2.2
-Tested up to: 3.0
+Tags: Content, Batch posting
+Donate link: http://www.amazon.com/gp/product/1456336584?ie=UTF8&tag=thenewjt30page&linkCode=as2&camp=1789&creative=390957&creativeASIN=1456336584
+Requires at least: 3.0
+Tested up to: 3.1
 Contributors: Keith Graham
-Stable tag: 1.0
+Stable tag: 1.1
 
-Loads content pages or posts from a zipped collection of text files. Includes sample databases of 325 business letters.
+Loads content pages, posts or custom post types from a zipped collection of text files. Includes sample databases of 325 business letters.
 
 == Description ==
 Adds new content as Posts or Pages from an archive of text files. Interesting archives can be found on the support website.
@@ -30,13 +29,13 @@ You can set a date in the future for posts and an interval for posting. Enter a 
 
 Important!
 
+There is a small test zip with a few entries for testing and a larger zip of over 300 business letters. 
+
 Backup your database first. The sample zips add a whole lot of content and it is a pain to delete them by hand if you don't like what you get. There may be a bug in WordPress 3.0 that limits the number of trash entries that can be emptied, so please backup your db before adding content that you are not sure that you want.
 
 Don't add the content twice without getting rid of the old data, this just adds duplicate pages.
 
-I have a dozen or so odd databases of content that may be interesting to some people who need instant content on their web sites, and I will make these available if there is any interest. Check my website http://www.blogseye.com for instant content zip files.
-
-For those of you who do not have zip at your hosting company, the plugin uses a zip hack that emulates zip using only gzip functions.
+You can read about creating your ow zip files at http://www.blogseye.com/instant-content-archive-format/
 
 
 
@@ -53,7 +52,20 @@ For those of you who do not have zip at your hosting company, the plugin uses a 
 = 1.0 =
 * initial release - please let me know if you find problems so I can fix them right away.
 
+= 1.1 =
+* Fixed a bug where Windows systems had trouble finding the zip file. Added custom post types to the mix.
+
 
 == Support ==
-This plugin is in active development. All feedback is welcome on "<a href="http://www.blogseye.com/" title="Wordpress plugin: Instant Content Plugin">program development pages</a>".
+This plugin is free and I expect nothing in return. If you wish to support my programming, buy my book: 
+<a href="http://www.amazon.com/gp/product/1456336584?ie=UTF8&tag=thenewjt30page&linkCode=as2&camp=1789&creative=390957&creativeASIN=1456336584">Error Message Eyes: A Programmer's Guide to the Digital Soul</a>
+Other plugins:
+<a href="http://wordpress.org/extend/plugins/open-in-new-window-plugin/">Open in New Window Plugin</a>
+<a href="http://wordpress.org/extend/plugins/kindle-this/">Kindle This - publish blog to user's Kindle</a>
+<a href="http://wordpress.org/extend/plugins/stop-spammer-registrations-plugin/">Stop Spammer Registrations Plugin</a>
+<a href="http://wordpress.org/extend/plugins/no-right-click-images-plugin/">No Right Click Images Plugin</a>
+<a href="http://wordpress.org/extend/plugins/collapse-page-and-category-plugin/">Collapse Page and Category Plugin</a>
+<a href="http://wordpress.org/extend/plugins/custom-post-type-list-widget/">Custom Post Type List Widget</a>
+<a href="http://wordpress.org/extend/plugins/permalink-finder/">Permalink Finder Plugin</a>
+
 

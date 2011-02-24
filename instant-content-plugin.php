@@ -21,6 +21,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 function kpg_Instant_Content_Plugin_dopostings_menu() {
 	add_pages_page('Instant Page Content', 'Instant Page Content', 'manage_options','InstantPages', 'kpg_add_Content_pages_control');
 	add_posts_page('Instant Post Content', 'Instant Post Content', 'manage_options','InstantPosts', 'kpg_add_Content_posts_control');
+	// if there are custom posts we can add to the custom posts menu item
+	add_options_page( 'Instant Custom Post Content', 'Instant Custom Post Content', 'manage_options', 'InstantCustom', 'kpg_add_Content_Custom_control');
+	
 }
 
 
@@ -60,87 +63,10 @@ function kpg_add_Content_pages_control() {
 	
 	// if there is something in $kg_file then we do something
 	if(!empty($kg_file)) {
-		// see if we need to create a parent page on the fly
-		if (!empty($kg_create_parent)) {
-			// create a root level 
-			$post = array( 
-				'post_content' => ' ', //The full text of the post.
-				'post_excerpt' => ' ', //For all your post excerpt needs.
-				'post_status' =>'publish', //Set the status of the new post. 
-				'post_title' => $kg_create_parent, //The title of your post.
-				'post_type' => 'page', //Sometimes you might want to post a page - or custom type.
-				'post_parent' => $kg_parent_id
-			); 
-			$kg_parent_id=wp_insert_post($post);
-		}
-		//open the file, read the content, add the posts
-		// open the zip file
-		$dir = WP_PLUGIN_DIR.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
-		$zipfile=$dir.'/'.$kg_file;
-		
-		//zip read
-		// first pass to find the title.txt file that has the category in it
-		$posts=array();
-		$cat='';
-		
-		$cat=getZip($zipfile,"title");
-		$zip=getZip($zipfile,'*');
-		
-		for ($j=0;$j<count($zip);$j++) {
-			$name= trim($zip[$j]);
-			$buf = getZip($zipfile,$name);
-			// $buff has the data - first line is the title of the post
-			// second line is the content
-			if ($name=='ind') {
-				// igore for now - used in complex data files
-			} else if ($name=='title'||$name=='title.txt') {
-				// alreaddy have it
-			} else if (strlen($name)>1) {
-				// $buf has the post - split it 
-				$postdata=explode("\n",$buf);
-				$ptitle=trim($postdata[0]);
-				unset($postdata[0]);
-				$pbody=implode("\n",$postdata);
-				//echo "found file first line=".$ptitle." length of array=".count($postdata)."<br/>";
-				$post = array( 
-					//'post_category' => array(), //Add some categories. an array()???
-					'post_content' => $pbody, //The full text of the post.
-					//'post_date' => $ddate, //[ Y-m-d H:i:s ] //The time post was made.
-					'post_excerpt' => $pbody, //For all your post excerpt needs.
-					//'post_name' =>$media_title, // The name (slug) for your post changed from $id
-					'post_status' =>'publish', //Set the status of the new post. 
-					'post_title' => $ptitle, //The title of your post.
-					'post_type' => 'page', //Eventually I might want to post a page - or custom type.
-					'post_parent' => $kg_parent_id
-				); 
-				$posts[count($posts)]=$post;
-			}
-		}
-		// fix up all the posts with the cat (usually last item in list)
-		// and do the inserts
-		// check to see if the category exists
-		$parent_content="<h3>$cat</h3>";
-		for ($j=0;$j<count($posts);$j++) {
-			$post=$posts[$j];
-			$newpost=wp_insert_post($post);
-			// need to get a link to this guy in order to add it to the created parent page
-			$parent_content.='<a href="'.get_permalink($newpost).'">'.$post['post_title'].'</a><br/>';
-			
-			echo "Added: ".$post['post_title']."<br/>";
-		}
-		// now update the parent content if needed
-		if (!empty($kg_create_parent)) {
-			$pp=get_post($kg_parent_id,ARRAY_A);
-			$pp['post_content']=$parent_content;
-			wp_update_post($pp);
-		}
-		
+		kpg_insert_content($kg_file,$kg_startdate,$kg_parent_id,$kg_freq,$kg_order,'page');
 	}
 	
-	// now we can create a page to enter the data
-	
 	// html here
-	
 	
 	?>
 <h2>Load Page Content Files </h2>
@@ -152,7 +78,7 @@ function kpg_add_Content_pages_control() {
 <?php
 // list the zip files in the directory
 
-		$dir = WP_PLUGIN_DIR.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
+		$dir = dirname(__FILE__);
 		$dh='';
 		 if ($dh = opendir($dir)) {
 			while (($file = readdir($dh)) !== false) {
@@ -199,6 +125,19 @@ function kpg_add_Content_pages_control() {
 <input type="submit" name="kg_sub1" class="button-primary" value="Add Instant Content" />
 </p>
 </form>	
+<p>Keith Graham is also the Author a collection of Science Fiction Stories. If you find this plugin useful, you might like to to <strong>Buy the Book</strong>.</p>
+<p><a href="http://www.amazon.com/gp/product/1456336584?ie=UTF8&tag=thenewjt30page&linkCode=as2&camp=1789&creative=390957&creativeASIN=1456336584">Error Message Eyes: A Programmer's Guide to the Digital Soul</a><img src="http://www.assoc-amazon.com/e/ir?t=thenewjt30page&l=as2&o=1&a=1456336584" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+</p>
+<p>This plugin is free and I expect nothing in return. 
+  A link on your blog to one of my personal sites would be appreciated.</p>
+<p>Keith Graham</p>
+<p>
+	<a href="http://www.blogseye.com" target="_blank">Blog&apos;s Eye</a> (My Wordpress Plugins and other PHP coding projects) <br />
+<a href="http://www.cthreepo.com/blog" target="_blank">Wandering Blog </a>(My personal Blog) <br />
+	<a href="http://www.cthreepo.com" target="_blank">Resources for Science Fiction</a> (Writing Science Fiction) <br />
+	<a href="http://www.jt30.com" target="_blank">The JT30 Page</a> (Amplified Blues Harmonica) <br />
+	<a href="http://www.harpamps.com" target="_blank">Harp Amps</a> (Vacuum Tube Amplifiers for Blues) <br />
+	<a href="http://www.cthreepo.com/bees" target="_blank">Bee Progress Beekeeping Blog</a> (My adventures as a new beekeeper) </p>
 	
 	
 	<?PHP
@@ -220,101 +159,10 @@ function kpg_add_Content_posts_control() {
 	if (array_key_exists('kg_startdate',$_POST)) $kg_startdate=$_POST['kg_startdate'];
 	if (array_key_exists('kg_freq',$_POST)) $kg_freq=$_POST['kg_freq'];
 	if (array_key_exists('kg_order',$_POST)) $kg_order=$_POST['kg_order'];
-	
+	$kg_parent_id=0;
 	// if there is something in $kg_file then we do something
 	if(!empty($kg_file)) {
-		//open the file, read the content, add the posts
-		// open the zip file
-		$dir = WP_PLUGIN_DIR.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
-		$zipfile=$dir.'/'.$kg_file;
-		
-		//zip read
-		// first pass to find the title.txt file that has the category in it
-		$cat='';
-		$cat=trim(getZip($zipfile,"title"));
-		// check to see if we need to create this as a category
-		$cat_id='';
-		if (!empty($cat)) {
-			if (!get_cat_ID( $cat )) {
-				// insert category
-				$cat_id=wp_create_category( $cat );
-			}
-			$cat_id=get_cat_ID( $cat );
-		}
-		// start with a date
-		if (!empty($kg_startdate)) {
-			$sdate=strtotime($kg_startdate);
-		} else {
-			$sdate=time();
-		}
-		// get the adder for how often we need to insert
-		if (empty($kg_freq)) {
-			$kg_freq=0;
-		}
-		// now figure how much to add
-		$freq=0;
-		switch($kg_freq) {
-			case '0':
-				$freq=0;
-				break;
-			case 'D':
-				$freq=24 * 60 * 60;
-				break;
-			case 'DD':
-				$freq=2*24 * 60 * 60;
-				break;
-			case 'W':
-				$freq=7*24 * 60 * 60;
-				break;
-			case 'F':
-				$freq=14*24 * 60 * 60;
-				break;
-			case '30':
-				$freq=30*24 * 60 * 60;
-				break;
-			default;
-				$freq=60*60; // just to be perverse
-		}
-		
-		$zip=getZip($zipfile,'*');
-		if ($kg_order=="R") {
-			shuffle($zip);
-		}
-		$sdate=$sdate-$freq; // inelegant hack - but that's me all over.
-		for ($j=0;$j<count($zip);$j++) {
-			$name= trim($zip[$j]);
-			$buf = getZip($zipfile,$name);
-			// $buff has the data - first line is the title of the post
-			// second line is the content
-			if ($name=='ind') {
-				// igore for now - used in complex data files
-			} else if ($name=='title') {
-				// alreaddy have it
-			} else if (strlen($name)>1) {
-				// $buf has the post - split it 
-				$postdata=explode("\n",$buf);
-				$ptitle=trim($postdata[0]);
-				unset($postdata[0]);
-				$pbody=implode("\n",$postdata);
-				//echo "found file first line=".$ptitle." length of array=".count($postdata)."<br/>";
-				$sdate+=$freq;
-				$ddate=date('Y-m-d H:i:s',$sdate);
-				$post = array( 
-					'post_category' => array($cat_id), //Add some categories. an array()???
-					'post_content' => $pbody, //The full text of the post.
-					'post_date' => $ddate, //[ Y-m-d H:i:s ] //The time post was made.
-					'post_excerpt' => $pbody, //For all your post excerpt needs.
-					//'post_name' =>$media_title, // The name (slug) for your post changed from $id
-					'post_status' =>'publish', //Set the status of the new post. 
-					'post_title' => $ptitle, //The title of your post.
-					'post_type' => 'post' // this could have been post or even a custom post type
-					//'post_parent' => $kg_parent_id
-				); 
-				$newpost=wp_insert_post($post);
-				echo "Added: ".$post['post_title']."<br/>";
-			}
-		}
-		
+		kpg_insert_content($kg_file,$kg_startdate,$kg_parent_id,$kg_freq,$kg_order,'post');
 	}
 	// html here
 	
@@ -331,7 +179,7 @@ function kpg_add_Content_posts_control() {
 		
 
 
-		$dir = WP_PLUGIN_DIR.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
+		$dir = dirname(__FILE__);
 		$dh='';
 		 if ($dh = opendir($dir)) {
 			while (($file = readdir($dh)) !== false) {
@@ -376,6 +224,137 @@ Alphabetic:<input type="radio" name="kg_order" value="A" />
  	<option value="W">Weekly</option>
  	<option value="DD">Every Other Day</option>
  	<option value="D">Daily</option>
+ 	<option value="H">Hourly</option>
+ 	<option value="0">All at once</option>
+ </select>
+ <br />
+ (<em>How often do you want future posts to appear.</em>)
+ </fieldset>	
+	
+
+ <p class="submit">
+<input type="submit" name="kg_sub2" class="button-primary" value="Add Instant Content" />
+</p>
+</form>	
+<hr/>	
+<p>Keith Graham is also the Author a collection of Science Fiction Stories. If you find this plugin useful, you might like to to <strong>Buy the Book</strong>.</p>
+<p><a href="http://www.amazon.com/gp/product/1456336584?ie=UTF8&tag=thenewjt30page&linkCode=as2&camp=1789&creative=390957&creativeASIN=1456336584">Error Message Eyes: A Programmer's Guide to the Digital Soul</a><img src="http://www.assoc-amazon.com/e/ir?t=thenewjt30page&l=as2&o=1&a=1456336584" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+</p>
+<p>This plugin is free and I expect nothing in return. 
+  A link on your blog to one of my personal sites would be appreciated.</p>
+<p>Keith Graham</p>
+<p>
+	<a href="http://www.blogseye.com" target="_blank">Blog&apos;s Eye</a> (My Wordpress Plugins and other PHP coding projects) <br />
+<a href="http://www.cthreepo.com/blog" target="_blank">Wandering Blog </a>(My personal Blog) <br />
+	<a href="http://www.cthreepo.com" target="_blank">Resources for Science Fiction</a> (Writing Science Fiction) <br />
+	<a href="http://www.jt30.com" target="_blank">The JT30 Page</a> (Amplified Blues Harmonica) <br />
+	<a href="http://www.harpamps.com" target="_blank">Harp Amps</a> (Vacuum Tube Amplifiers for Blues) <br />
+	<a href="http://www.cthreepo.com/bees" target="_blank">Bee Progress Beekeeping Blog</a> (My adventures as a new beekeeper) </p>
+	
+	<?PHP
+}
+
+
+
+function kpg_add_Content_Custom_control() {
+	// just a quick check to keep out the riff-raff
+	if(!current_user_can('manage_options')) {
+		die('Access Denied');
+	}
+	// look for parameters
+	// we need to know the name of the file to post as content
+	// Posts need a date. The date can be generated based on start date and frequency
+	
+	$kg_file=""; // the posts file to load
+	$kg_startdate=""; // when to begin posting
+	$kg_freq=""; // How often to do posts
+	$kg_order="";
+	$kg_ptype='';
+	if (array_key_exists('kg_file',$_POST)) $kg_file=$_POST['kg_file'];
+	if (array_key_exists('kg_startdate',$_POST)) $kg_startdate=$_POST['kg_startdate'];
+	if (array_key_exists('kg_freq',$_POST)) $kg_freq=$_POST['kg_freq'];
+	if (array_key_exists('kg_order',$_POST)) $kg_order=$_POST['kg_order'];
+	if (array_key_exists('kg_ptype',$_POST)) $kg_ptype=$_POST['kg_ptype'];
+	$kg_parent_id=0;
+	// if there is something in $kg_file then we do something
+	if(!empty($kg_file)) {
+		kpg_insert_content($kg_file,$kg_startdate,$kg_parent_id,$kg_freq,$kg_order,$kg_ptype);
+	}
+	// html here
+	
+	
+	?>
+<h2>Load Custom Post Type Content Files</h2>
+<form method="post" action="" name="DOIT3" >
+<input type="hidden" name="action" value="update" />
+<input type="hidden" name="ac_add_action" id="ac_add_action" value="" />
+<fieldset style="border:thin black solid;padding:2px;"><legend>Loadable Data Files:</legend>	
+ <select name="kg_file">
+<?php
+// list the zip files in the directory
+		
+
+
+		$dir = dirname(__FILE__);
+		$dh='';
+		 if ($dh = opendir($dir)) {
+			while (($file = readdir($dh)) !== false) {
+				if (is_dir($dir .'/'. $file)) {
+				} else if ( strpos($file,'.zip')>0 ) {
+					echo "<option value=\"$file\" >$file</option>";
+				} else {
+					//echo "can't find .php in $file <br/>";
+				}
+			}
+			closedir($dh);
+		}
+		
+	?>		
+</select>	
+ <br />
+(<em>Pick the zip file that you want to load.</em>) 
+</fieldset>
+<br/>
+<fieldset style="border:thin black solid;padding:2px;">
+<legend>Enter Start Date/Time:</legend>	
+<input name="kg_startdate" type="text" size="64" /> 
+<br />
+(<em>most any date time format such as July 4, 2020 8:00AM - this is not validated so be careful!</em>)<br/>
+</fieldset><fieldset style="border:thin black solid;padding:2px;">
+<legend>Randomize Orderof Posts:</legend>	
+
+Random:<input type="radio" name="kg_order" value="R" checked="true" /><br/>
+Alphabetic:<input type="radio" name="kg_order" value="A" />
+<br />
+(<em>Most archives are in Alphabetical Order. Use this to mix up the order. </em>)
+</fieldset>
+
+ <br/>
+ <fieldset style="border:thin black solid;padding:2px;">
+<legend>Custom Post Type: </legend>	
+ <select name="kg_ptype">
+ <?php
+ $post_types=get_post_types('','names'); 
+foreach ($post_types as $post_type ) {
+  echo "<option value=\"$post_type\" ";
+  if ($kg_ptype==$post_type) echo 'selected="true"';
+  echo ">$post_type</option>";
+}
+?>
+ </select>
+ <br />
+ (<em>Select a post, page or custom post type.</em>)
+ </fieldset>	
+
+<fieldset style="border:thin black solid;padding:2px;">
+<legend>Frequency of future postings: </legend>	
+ <select name="kg_freq">
+ 	<option value="0">All at once</option>
+ 	<option value="30">Every 30 days</option>
+ 	<option value="F">Every Fortnight</option>
+ 	<option value="W">Weekly</option>
+ 	<option value="DD">Every Other Day</option>
+ 	<option value="D">Daily</option>
  	<option value="0">All at once</option>
  </select>
  <br />
@@ -388,9 +367,128 @@ Alphabetic:<input type="radio" name="kg_order" value="A" />
 </p>
 </form>	
 	
+<p>Keith Graham is also the Author a collection of Science Fiction Stories. If you find this plugin useful, you might like to to <strong>Buy the Book</strong>.</p>
+<p><a href="http://www.amazon.com/gp/product/1456336584?ie=UTF8&tag=thenewjt30page&linkCode=as2&camp=1789&creative=390957&creativeASIN=1456336584">Error Message Eyes: A Programmer's Guide to the Digital Soul</a><img src="http://www.assoc-amazon.com/e/ir?t=thenewjt30page&l=as2&o=1&a=1456336584" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+</p>
+<p>This plugin is free and I expect nothing in return. 
+  A link on your blog to one of my personal sites would be appreciated.</p>
+<p>Keith Graham</p>
+<p>
+	<a href="http://www.blogseye.com" target="_blank">Blog&apos;s Eye</a> (My Wordpress Plugins and other PHP coding projects) <br />
+<a href="http://www.cthreepo.com/blog" target="_blank">Wandering Blog </a>(My personal Blog) <br />
+	<a href="http://www.cthreepo.com" target="_blank">Resources for Science Fiction</a> (Writing Science Fiction) <br />
+	<a href="http://www.jt30.com" target="_blank">The JT30 Page</a> (Amplified Blues Harmonica) <br />
+	<a href="http://www.harpamps.com" target="_blank">Harp Amps</a> (Vacuum Tube Amplifiers for Blues) <br />
+	<a href="http://www.cthreepo.com/bees" target="_blank">Bee Progress Beekeeping Blog</a> (My adventures as a new beekeeper) </p>
 	
 	<?PHP
 }
+
+
+function kpg_insert_content($kg_file,$kg_startdate,$kg_parent_id,$kg_freq,$kg_order,$kg_ptype) {
+	// this is the way to insert the posts - to save typing
+		//open the file, read the content, add the posts
+		// open the zip file
+		// we've had trouble here before - try a different approach
+		$dir = dirname(__FILE__);
+		$zipfile=$dir.'/'.$kg_file;
+		
+		//zip read
+		// first pass to find the title.txt file that has the category in it
+		$cat='';
+		$cat=trim(getZip($zipfile,"title"));
+		// check to see if we need to create this as a category
+		$cat_id='';
+		if (!empty($cat)) {
+			if (!get_cat_ID( $cat )) {
+				// insert category
+				$cat_id=wp_create_category( $cat );
+			}
+			$cat_id=get_cat_ID( $cat );
+		}
+		// start with a date
+		if (!empty($kg_startdate)) {
+			$sdate=strtotime($kg_startdate);
+		} else {
+			$sdate=time();
+		}
+		// get the adder for how often we need to insert
+		if (empty($kg_freq)) {
+			$kg_freq=0;
+		}
+		// now figure how much to add
+		$freq=0;
+		switch($kg_freq) {
+			case '0':
+				$freq=0;
+				break;
+			case 'D':
+				$freq=24 * 60 * 60;
+				break;
+			case 'H':
+				$freq=60 * 60;
+				break;
+			case 'DD':
+				$freq=2*24 * 60 * 60;
+				break;
+			case 'W':
+				$freq=7*24 * 60 * 60;
+				break;
+			case 'F':
+				$freq=14*24 * 60 * 60;
+				break;
+			case '30':
+				$freq=30*24 * 60 * 60;
+				break;
+			default;
+				$freq=60*60; // just to be perverse
+		}
+		//echo "<h2>$zipfile</h2>";
+		$zip=getZip($zipfile,'*');
+		if ($kg_order=="R") {
+			shuffle($zip);
+		}
+		$sdate=$sdate-$freq; // inelegant hack - but that's me all over.
+		for ($j=0;$j<count($zip);$j++) {
+			$name= trim($zip[$j]);
+			$buf = getZip($zipfile,$name);
+			// $buff has the data - first line is the title of the post
+			// second line is the content
+			if ($name=='ind') {
+				// igore for now - used in complex data files
+			} else if ($name=='title') {
+				// alreaddy have it
+			} else if (strlen($name)>1) {
+				// $buf has the post - split it 
+				$postdata=explode("\n",$buf);
+				$ptitle=trim($postdata[0]);
+				unset($postdata[0]);
+				$pbody=implode("\n",$postdata);
+				//echo "found file first line=".$ptitle." length of array=".count($postdata)."<br/>";
+				$sdate+=$freq;
+				$ddate=date('Y-m-d H:i:s',$sdate);
+				$post = array( 
+					'post_category' => array($cat_id), //Add some categories. an array()???
+					'post_content' => $pbody, //The full text of the post.
+					'post_date' => $ddate, //[ Y-m-d H:i:s ] //The time post was made.
+					'post_excerpt' => $pbody, //For all your post excerpt needs.
+					//'post_name' =>$media_title, // The name (slug) for your post changed from $id
+					'post_status' =>'publish', //Set the status of the new post. 
+					'post_title' => $ptitle, //The title of your post.
+					'post_type' => $kg_ptype, // this could have been post or even a custom post type
+					'post_parent' => $kg_parent_id
+				); 
+				if ($kg_parent_id==0) unset($newpost['post_parent']);
+				$newpost=wp_insert_post($post);
+				echo "Added: ".$post['post_title']."<br/>";
+			}
+		}
+
+
+
+}
+
+
 
 // get zip for hostgator and others that don't know how to do zips
 function getZip($zip,$zfile) {
