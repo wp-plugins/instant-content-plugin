@@ -3,7 +3,7 @@
 Plugin Name: Instant Content Plugin
 Plugin URI: http://www.BlogsEye.com
 Description: Loads content pages from a zipped collection of text files. 
-Version: 1.0
+Version: 1.1
 Author: Keith P. Graham
 Author URI: http://www.BlogsEye.com/
 
